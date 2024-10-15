@@ -2,6 +2,11 @@
 Changelog for package hsrb_mapping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2024-10-15)
+-------------------
+* Migration to ROS2 Humble
+* Contributors: Hiroaki Yaguchi
+
 2.0.0 (2022-10-20)
 -------------------
 * Migration to ROS2 Foxy

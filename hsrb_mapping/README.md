@@ -6,7 +6,7 @@
 hsrb_mapping は トヨタパートナーロボット HSR の ROS 地図作成パッケージです．
 本パッケージを利用することで環境空間の地図を作成することができます．
 
-ROS Foxy に対応しています．
+ROS Humble に対応しています．
 
 
 ## クイックスタート
@@ -22,6 +22,13 @@ ROS Foxy に対応しています．
 
 ```
 $ colcon_cd hsrb_mapping && rviz2 -d rviz/hsr_slam_toolbox_mapping.rviz
+```
+
+※ colcon_cdが無い場合は、以下を実施して下さい。．
+```
+$ echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ~/.bashrc
+$ echo "export _colcon_cd_root=~/" >> ~/.bashrc
+$ source .bashrc
 ```
 
 
@@ -42,7 +49,7 @@ RQT Robot Steering やジョイスティックコントローラを用いてロ�
 事前にRQTのプラグインをインストールしておきます．
 
 ```
-$ apt install ros-foxy-rqt-robot-steering
+$ apt install ros-humble-rqt-robot-steering
 ```
 
 rqt を起動します．
@@ -70,7 +77,7 @@ $ ros2 launch hsrb_mapping teleop.launch.py
 
 ※ 事前に以下パッケージをインストールする必要がある場合があります．
 ```
-$ apt install ros-foxy-joy-linux ros-foxy-joy-linux-dbgsym
+$ apt install ros-humble-joy-linux ros-humble-joy-linux-dbgsym
 ```
 
 Enable ボタンに設定されている10番のボタン L1 ボタンを押しながら
@@ -93,7 +100,7 @@ $ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r cmd_vel:=/o
 地図が完成したら保存をします．
 
 ```
-$ ros2 run nav2_map_server map_saver_cli -f map --ros-args -p save_map_timeout:=100000
+$ ros2 run nav2_map_server map_saver_cli -f map --ros-args -p save_map_timeout:=100000.0
 ```
 
 カレントディレクトリに下記の2つのファイルが保存されます．
