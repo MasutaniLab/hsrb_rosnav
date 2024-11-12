@@ -6,11 +6,8 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    ExecuteProcess,
     IncludeLaunchDescription,
-    OpaqueFunction,
     SetEnvironmentVariable,
-    TimerAction,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -29,6 +26,26 @@ def declare_arguments():
         DeclareLaunchArgument(
             'use_sim_time', default_value='false',
             description='Use simulation (Gazebo) clock if true'))
+
+    # declared_arguments.append(
+    #     DeclareLaunchArgument(
+    #         'initial_pose_x', default_value='0',
+    #         description='Initial x position of the robot'))
+
+    # declared_arguments.append(
+    #     DeclareLaunchArgument(
+    #         'initial_pose_y', default_value='0',
+    #         description='Initial y position of the robot'))
+
+    # declared_arguments.append(
+    #     DeclareLaunchArgument(
+    #         'initial_pose_z', default_value='0',
+    #         description='Initial z position of the robot'))
+
+    # declared_arguments.append(
+    #     DeclareLaunchArgument(
+    #         'initial_pose_yaw', default_value='0',
+    #         description='Initial yaw of the robot'))
 
     declared_arguments.append(
         DeclareLaunchArgument(
@@ -57,25 +74,24 @@ def declare_arguments():
 
     declared_arguments.append(
         DeclareLaunchArgument(
-            'map_subscribe_transient_local', default_value='false',
+            'map_subscribe_transient_local', default_value='true',
             description='Whether to set the map subscriber QoS to transient local'))
 
     return declared_arguments
 
 
-def launch_setup(context,
-                 namespace,
-                 use_sim_time,
-                 initial_orientation_xyzw,
-                 autostart,
-                 map_yaml_file,
-                 params_file,
-                 default_bt_xml_filename,
-                 map_subscribe_transient_local):
-
-    initial_orientation_xyzw_list = context.perform_substitution(initial_orientation_xyzw).split(',')
-    orientation = f'x: {initial_orientation_xyzw_list[0]}, y: {initial_orientation_xyzw_list[1]}, \
-                    z: {initial_orientation_xyzw_list[2]}, w: {initial_orientation_xyzw_list[3]}'
+def generate_launch_description():
+    namespace = LaunchConfiguration('namespace')
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    autostart = LaunchConfiguration('autostart')
+    map_yaml_file = LaunchConfiguration('map')
+    params_file = LaunchConfiguration('params_file')
+    default_bt_xml_filename = LaunchConfiguration('default_bt_xml_filename')
+    map_subscribe_transient_local = LaunchConfiguration('map_subscribe_transient_local')
+    # initial_pose_x = LaunchConfiguration('initial_pose_x')
+    # initial_pose_y = LaunchConfiguration('initial_pose_y')
+    # initial_pose_z = LaunchConfiguration('initial_pose_z')
+    # initial_pose_yaw = LaunchConfiguration('initial_pose_yaw')
 
     lifecycle_nodes = ['controller_server',
                        'planner_server',
@@ -90,6 +106,11 @@ def launch_setup(context,
 
     param_substitutions = {
         'use_sim_time': use_sim_time,
+        # we want to set the initial pose from the launch argument here, but not work because we have no way to hand this to localization_launch.py
+        # 'initial_pose.x': initial_pose_x,
+        # 'initial_pose.y': initial_pose_y,
+        # 'initial_pose.z': initial_pose_z,
+        # 'initial_pose.yaw': initial_pose_yaw,
         'default_bt_xml_filename': default_bt_xml_filename,
         'autostart': autostart,
         'map_subscribe_transient_local': map_subscribe_transient_local}
@@ -99,25 +120,6 @@ def launch_setup(context,
         root_key=namespace,
         param_rewrites=param_substitutions,
         convert_types=True)
-
-    set_initial_cmd = ExecuteProcess(
-        cmd=[[
-            'ros2 ',
-            'topic pub -1 ',
-            '/initialpose geometry_msgs/PoseWithCovarianceStamped ',
-            '\'{ header: {stamp: {sec: 0, nanosec: 0}, frame_id: "map"}, ',
-            'pose: { pose: {position: {x: 0.0, y: 0.0, z: 0.0}, ',
-            'orientation: {',
-            f'{orientation}',
-            '}, } } }\''
-        ]],
-        shell=True
-    )
-
-    set_initial_cmd_delay = TimerAction(
-        period=20.0,
-        actions=[set_initial_cmd]
-    )
 
     env = SetEnvironmentVariable('RCUTILS_LOGGING_BUFFERED_STREAM', '1')
 
@@ -187,22 +189,7 @@ def launch_setup(context,
         behavior_server_node,
         bt_navigator_node,
         waypoint_follower_node,
-        lifecycle_manager_node,
-        set_initial_cmd_delay
+        lifecycle_manager_node
     ]
 
-    return nodes
-
-
-def generate_launch_description():
-
-    return LaunchDescription(declare_arguments() + [
-        OpaqueFunction(function=launch_setup,
-                       args=[LaunchConfiguration('namespace'),
-                             LaunchConfiguration('use_sim_time'),
-                             LaunchConfiguration('initial_orientation_xyzw'),
-                             LaunchConfiguration('autostart'),
-                             LaunchConfiguration('map'),
-                             LaunchConfiguration('params_file'),
-                             LaunchConfiguration('default_bt_xml_filename'),
-                             LaunchConfiguration('map_subscribe_transient_local')])])
+    return LaunchDescription(declare_arguments() + nodes)
