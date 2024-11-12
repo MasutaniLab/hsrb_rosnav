@@ -106,7 +106,8 @@ def generate_launch_description():
 
     param_substitutions = {
         'use_sim_time': use_sim_time,
-        # we want to set the initial pose from the launch argument here, but not work because we have no way to hand this to localization_launch.py
+        # we want to set the initial pose from the launch argument here,
+        # but not work because we have no way to hand this to localization_launch.py
         # 'initial_pose.x': initial_pose_x,
         # 'initial_pose.y': initial_pose_y,
         # 'initial_pose.z': initial_pose_z,
